@@ -50,6 +50,19 @@ app.get("/api/health", (req, res) => {
 });
 
 /* =========================
+   FRONTEND (PRODUCTION)
+========================= */
+if (process.env.NODE_ENV === "production") {
+  const buildPath = path.join(__dirname, "../frontend/build");
+  app.use(express.static(buildPath));
+
+  // This handles all frontend routes like /admin/login, /products, etc.
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(buildPath, "index.html"));
+  });
+}
+
+/* =========================
    MULTER ERROR HANDLER
 ========================= */
 app.use((err, req, res, next) => {
