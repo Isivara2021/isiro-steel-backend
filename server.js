@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const multer = require("multer");
 const connectDB = require("./config/db");
 
 // Routes
@@ -13,7 +12,7 @@ const newsRoutes = require("./routes/newsRoutes");
 
 const app = express();
 
-// Connect DB
+// Connect to MongoDB
 connectDB();
 
 /* =========================
@@ -21,18 +20,14 @@ connectDB();
 ========================= */
 app.use(
   cors({
-    origin: "*", // ⚠️ Restrict later to frontend domain
+    origin: process.env.FRONTEND_URL || "*", // Restrict to frontend URL in production
     methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   })
 );
 
-app.use(express.json({ limit: "5mb" }));
-app.use(express.urlencoded({ extended: true, limit: "5mb" }));
-
-/* =========================
-   STATIC FILES (UPLOADS)
-========================= */
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 /* =========================
    API ROUTES
@@ -50,19 +45,16 @@ app.get("/api/health", (req, res) => {
 });
 
 /* =========================
-   MULTER ERROR HANDLER
+   FRONTEND SERVING (PRODUCTION)
 ========================= */
-app.use((err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    return res.status(400).json({ message: err.message });
-  }
+if (process.env.NODE_ENV === "production") {
+  const buildPath = path.join(__dirname, "../frontend/build");
+  app.use(express.static(buildPath));
 
-  if (err.message === "Only image files are allowed") {
-    return res.status(400).json({ message: err.message });
-  }
-
-  next(err);
-});
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(buildPath, "index.html"));
+  });
+}
 
 /* =========================
    GLOBAL ERROR HANDLER
