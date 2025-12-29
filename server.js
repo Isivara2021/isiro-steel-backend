@@ -12,6 +12,8 @@ const adminRoutes = require("./routes/adminRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 
 const app = express();
+
+// Connect DB
 connectDB();
 
 /* =========================
@@ -19,7 +21,7 @@ connectDB();
 ========================= */
 app.use(
   cors({
-    origin: "*", // 🔒 Restrict in production
+    origin: "*", // ⚠️ Restrict later to frontend domain
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
@@ -30,10 +32,7 @@ app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 /* =========================
    STATIC FILES (UPLOADS)
 ========================= */
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "uploads"))
-);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 /* =========================
    API ROUTES
@@ -49,18 +48,6 @@ app.use("/api/news", newsRoutes);
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
-
-/* =========================
-   FRONTEND (PRODUCTION)
-========================= */
-if (process.env.NODE_ENV === "production") {
-  const buildPath = path.join(__dirname, "../frontend/build");
-  app.use(express.static(buildPath));
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(buildPath, "index.html"));
-  });
-}
 
 /* =========================
    MULTER ERROR HANDLER
