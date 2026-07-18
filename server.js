@@ -20,7 +20,7 @@ connectDB();
 ========================= */
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "*", // Restrict to frontend URL in production
+    origin: process.env.FRONTEND_URL || "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -41,7 +41,12 @@ app.use("/api/news", newsRoutes);
    HEALTH CHECK
 ========================= */
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok" });
+  res.status(200).json({
+    status: "OK",
+    service: "ISIRO Backend",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
 });
 
 /* =========================
